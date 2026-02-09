@@ -46,7 +46,7 @@ def generate_bw_image(playerIGN):
         radius=25,
         fill=(22, 22, 30)
     )
-    fsize = 30
+    fsize = 5
     try:
         title_font = ImageFont.truetype("arial.ttf", fsize+40)
         text_font = ImageFont.truetype("arial.ttf", fsize+22)
