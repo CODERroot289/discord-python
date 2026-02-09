@@ -46,11 +46,14 @@ def generate_bw_image(playerIGN):
         radius=25,
         fill=(22, 22, 30)
     )
-    fsize = 5
+    fsize = 30
     try:
         title_font = ImageFont.truetype("arial.ttf", fsize+40)
         text_font = ImageFont.truetype("arial.ttf", fsize+22)
     except:
+        import traceback
+        error = traceback.format_exc()
+        print(error)
         title_font = text_font = ImageFont.load_default()
 
 
@@ -115,6 +118,7 @@ async def bwst(interaction: discord.Interaction, player: str):
     except Exception as e:
         import traceback
         error = traceback.format_exc()
+        print(error)
         await interaction.followup.send(
             "❌ Error:\n```python\n" + error[:1900] + "\n```"
         )
