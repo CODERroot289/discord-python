@@ -48,8 +48,8 @@ def generate_bw_image(playerIGN):
     )
     fsize = 30
     try:
-        title_font = ImageFont.truetype("arial.ttf", fsize+40)
-        text_font = ImageFont.truetype("arial.ttf", fsize+22)
+        title_font = ImageFont.truetype("Arial.ttf", fsize+40)
+        text_font = ImageFont.truetype("Arial.ttf", fsize+22)
     except:
         import traceback
         error = traceback.format_exc()
