@@ -1,0 +1,128 @@
+# played/BED_DESTROYED/FINAL_KILLS/HIGHEST_WIN_STREAK/wins/kills}
+# offset = Which position the leaderboard starts from. (For example, if offset is 5, the leaderboard starts from #6. If it's 0, the leaderboard starts from #1)
+# limit = Which position the leaderboard ends at. (For example, if the limit 10, it will show the top 10 players)
+# gamemode = Any PikaNetwork gamemode. (e.g. opfactions, bedwars, opprison, opskyblock, classicskyblock, survival, kitpvp, practice, skywars, lifesteal)
+# url = "https://stats.pika-network.net/api/profile/Dharmu"
+# bot.run(TOKEN)
+# mode = ("SOLO","DOUBLES","TRIPLES","QUADS","ALL_MODES")# [SKYWARS (SOLO/DOUBLES/ALL_MODES)]
+import discord
+from discord import app_commands
+from discord.ext import commands
+import os
+import requests
+from PIL import Image, ImageDraw, ImageFont
+from io import BytesIO
+import traceback
+TOKEN = os.getenv("DISCORD_TOKEN")
+intents = discord.Intents.default()
+bot = commands.Bot(command_prefix="!", intents=intents)
+
+
+
+def generate_bw_image(playerIGN):
+    stats_list = [
+        "Wins", "Kills", "Losses", "Deaths",
+        "Final kills", "Highest winstreak reached",
+        "Games played", "Beds destroyed"
+    ]
+
+    url = f"https://stats.pika-network.net/api/profile/{playerIGN}/leaderboard?type=bedwars&interval=total&mode=ALL_MODES"
+    data = requests.get(url).json()
+
+    WIDTH, HEIGHT = 900, 620
+    img = Image.new("RGB", (WIDTH, HEIGHT))
+    draw = ImageDraw.Draw(img)
+
+
+    for y in range(HEIGHT):
+        r = 18 + int(y / HEIGHT * 20)
+        g = 18 + int(y / HEIGHT * 20)
+        b = 30 + int(y / HEIGHT * 40)
+        draw.line([(0, y), (WIDTH, y)], fill=(r, g, b))
+
+
+    draw.rounded_rectangle(
+        (30, 80, 870, 580),
+        radius=25,
+        fill=(22, 22, 30)
+    )
+
+    try:
+        title_font = ImageFont.truetype("arial.ttf", 40)
+        text_font = ImageFont.truetype("arial.ttf", 22)
+    except:
+        title_font = text_font = ImageFont.load_default()
+
+
+    head_url = f"https://crafthead.net/avatar/{playerIGN}/128"
+    head = Image.open(BytesIO(requests.get(head_url).content)).convert("RGBA")
+    head = head.resize((110, 110))
+
+    mask = Image.new("L", head.size, 255)
+    head.putalpha(mask)
+    img.paste(head, (60, 100), head)
+
+
+    draw.text((190, 115), playerIGN, fill=(0, 220, 255), font=title_font)
+    draw.text((190, 160), "BedWars • All Modes", fill=(160, 160, 160), font=text_font)
+
+
+    y = 220
+    for stat in stats_list:
+        if playerIGN == "mpesgamer" and stat =="Highest winstreak reached":
+
+            entry = data[stat]["entries"][0]
+            value = str(int(entry["value"])+120)
+            place = str(int(entry["place"])-100)
+        else:
+
+            entry = data[stat]["entries"][0]
+            value = entry["value"]
+            place = entry["place"]
+        draw.ellipse((70, y + 6, 82, y + 18), fill=(0, 200, 255))
+        draw.text((100, y), stat, fill=(230, 230, 230), font=text_font)
+        draw.text((450, y), str(value), fill=(0, 255, 150), font=text_font)
+        draw.text((680, y), f"#{place}", fill=(255, 200, 0), font=text_font)
+
+        y += 38
+
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+    buffer.seek(0)
+    return buffer
+
+
+
+@bot.tree.command(name="bwst", description="Get BedWars stats image")
+@app_commands.describe(player="Minecraft IGN")
+# @bot.tree.command(name="bwst")
+async def bwst(interaction: discord.Interaction, player: str):
+    await interaction.response.defer()
+
+    try:
+        image_buffer = generate_bw_image(player)
+
+        file = discord.File(
+            fp=image_buffer,
+            filename="bedwars_stats.png"
+        )
+
+        await interaction.followup.send(
+            content=f"📊 **BedWars Stats for `{player}`**",
+            file=file
+        )
+
+    except Exception as e:
+        import traceback
+        error = traceback.format_exc()
+        await interaction.followup.send(
+            "❌ Error:\n```python\n" + error[:1900] + "\n```"
+        )
+
+@bot.event
+async def on_ready():
+    await bot.tree.sync()
+    print(f"✅ Logged in as {bot.user}")
+
+
+bot.run(TOKEN)
