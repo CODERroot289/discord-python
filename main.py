@@ -120,7 +120,7 @@ async def bwst(interaction: discord.Interaction, player: str):
         error = traceback.format_exc()
         print(error)
         await interaction.followup.send(
-            "❌ Error:\n```python\n" + error[:1900] + "\n```"
+            "❌ Error:\n```python\n"+ "\n```"
         )
 
 @bot.event
