@@ -13,12 +13,26 @@ import requests
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 import traceback
+from guildlb import *
+from discord.ext import tasks
+import datetime
+import pytz
+
 TOKEN = os.getenv("DISCORD_TOKEN")
-intents = discord.Intents.default()
+intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
-
-
-
+client = discord.Client(intents=intents)
+stats_list = [
+        "Wins", "Kills", 
+        "Final kills", "Highest winstreak reached", "Beds destroyed"
+    ]
+def glb(stat,intervaltime,USERNAME,GAMEMODE):
+    
+    img =guildleaderboard(stat,intervaltime,USERNAME,GAMEMODE)
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+    buffer.seek(0)
+    return buffer
 def generate_bw_image(playerIGN):
     stats_list = [
         "Wins", "Kills", "Losses", "Deaths",
@@ -93,12 +107,99 @@ def generate_bw_image(playerIGN):
     img.save(buffer, format="PNG")
     buffer.seek(0)
     return buffer
+@bot.event
+async def on_ready():
+    await bot.tree.sync()
+    print(f"✅ Logged in as {bot.user}")
+    scheduled_task.start()
+
+
+
+@tasks.loop(minutes=1)
+async def scheduled_task():
+    # print("l")
+    channel = await bot.fetch_channel(1472502275678142536)
+    now = datetime.datetime.now(pytz.timezone("Asia/Kolkata"))
+
+    if now.hour == 20 and now.minute == 0:  # 8:00 PM
+        if channel:
+            # ...
+            # /guildst stat:Wins interval:weekly mode:ALL_MODES
+            try:
+                # files = []
+                await channel.send(
+                    content=f"📊 **GUILD leaderboard**"
+                    )
+                for x in stats_list:
+
+                    image_buffer = glb(x.capitalize(),"weekly","mpesgamer","ALL_MODES")
+
+                    file = discord.File(
+                        fp=image_buffer,
+
+                        filename="guildbedwars_stats.png"
+                    )
+                    # files.append(file)
+                    await channel.send(
+                        content=f"{x.capitalize()} leaderboard",
+                        file=file
+                )
+
+            except Exception as e:
+                import traceback
+                error = traceback.format_exc()
+                print(error)
+                await channel.send(
+                    "❌ Error:\n```python\n"+ "\n```"
+                )
+
+        # await channel.send("/guildst stat:Wins interval:weekly mode:ALL_MODES")
+
+
+@bot.tree.command(name="guildst", description="Get BedWars guild stats image")
+@app_commands.describe(
+    stat ='''
+"Wins", "Kills", "Losses", "Deaths",
+"Final kills", "Highest winstreak reached",
+"Games played", "Beds destroyed"
+        ''',
+        interval="(weekly/yearly/monthly/total)",
+        mode="(SOLO/DOUBLES/TRIPLES/QUADS/ALL_MODES)"
+)
+
+
+async def guildst(interaction: discord.Interaction, stat : str,interval: str,mode: str):
+        
+    await interaction.response.defer()
+
+    try:
+        image_buffer = glb(stat.capitalize(),interval,"mpesgamer",mode)
+
+        file = discord.File(
+            fp=image_buffer,
+            filename="guildbedwars_stats.png"
+        )
+
+        await interaction.followup.send(
+            content=f"📊 **GUILD leaderboard**",
+            file=file
+        )
+
+    except Exception as e:
+        import traceback
+        error = traceback.format_exc()
+        print(error)
+        await interaction.followup.send(
+            "❌ Error:\n```python\n"+ "\n```"
+        )
+
+
+
 
 
 
 @bot.tree.command(name="bwst", description="Get BedWars stats image")
 @app_commands.describe(player="Minecraft IGN")
-# @bot.tree.command(name="bwst")
 async def bwst(interaction: discord.Interaction, player: str):
     await interaction.response.defer()
 
@@ -122,11 +223,6 @@ async def bwst(interaction: discord.Interaction, player: str):
         await interaction.followup.send(
             "❌ Error:\n```python\n"+ "\n```"
         )
-
-@bot.event
-async def on_ready():
-    await bot.tree.sync()
-    print(f"✅ Logged in as {bot.user}")
 
 
 bot.run(TOKEN)
