@@ -104,9 +104,9 @@ def guildleaderboard(stat,intervaltime,USERNAME,GAMEMODE):
 
     # Fonts (use better font if available)
     try:
-        title_font = ImageFont.truetype("arial.ttf", 40)
-        name_font = ImageFont.truetype("arial.ttf", 35)
-        small_font = ImageFont.truetype("arial.ttf", 25)
+        title_font = ImageFont.truetype("Arial.ttf", 40)
+        name_font = ImageFont.truetype("Arial.ttf", 35)
+        small_font = ImageFont.truetype("Arial.ttf", 25)
     except:
         title_font = ImageFont.load_default()
         name_font = ImageFont.load_default()
