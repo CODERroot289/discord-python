@@ -17,8 +17,8 @@ from guildlb import *
 from discord.ext import tasks
 import datetime
 import pytz
-from flask import Flask
-import threading
+# from flask import Flask
+# import threading
 
 
 TOKEN = os.getenv("DISCORD_TOKEN")
@@ -30,19 +30,19 @@ stats_list = [
         "Final kills", "Highest winstreak reached", "Beds destroyed"
     ]
 
-app = Flask(__name__)
-messages_store = []
-@app.route("/")
-def home():
-    return "Bot is running!"
+# app = Flask(__name__)
+# messages_store = []
+# @app.route("/")
+# def home():
+#     return "Bot is running!"
 
-@app.route("/messages")
-def show_messages():
-    html = "<h2>DM Messages Received</h2><ul>"
-    for msg in messages_store[::-1]:
-        html += f"<li><b>{msg['user']}</b>: {msg['content']}</li>"
-    html += "</ul>"
-    return html
+# @app.route("/messages")
+# def show_messages():
+#     html = "<h2>DM Messages Received</h2><ul>"
+#     for msg in messages_store[::-1]:
+#         html += f"<li><b>{msg['user']}</b>: {msg['content']}</li>"
+#     html += "</ul>"
+#     return html
 
 
 
@@ -253,16 +253,16 @@ async def on_message(message):
         print(f"DM from {message.author}: {message.content}")
 
         # Store message
-        messages_store.append({
-            "user": str(message.author),
-            "content": message.content
-        })
+        # messages_store.append({
+        #     "user": str(message.author),
+        #     "content": message.content
+        # })
 
     await bot.process_commands(message)
 
-def run_flask():
-    app.run(host="0.0.0.0", port=8080)
+# def run_flask():
+#     app.run(host="0.0.0.0", port=8080)
 
-threading.Thread(target=run_flask).start()
+# threading.Thread(target=run_flask).start()
 
 bot.run(TOKEN)
