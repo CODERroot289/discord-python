@@ -260,5 +260,9 @@ async def on_message(message):
 
     await bot.process_commands(message)
 
+def run_flask():
+    app.run(host="0.0.0.0", port=8080)
+
+threading.Thread(target=run_flask).start()
 
 bot.run(TOKEN)
