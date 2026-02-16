@@ -17,6 +17,9 @@ from guildlb import *
 from discord.ext import tasks
 import datetime
 import pytz
+from flask import Flask
+import threading
+
 
 TOKEN = os.getenv("DISCORD_TOKEN")
 intents = discord.Intents.all()
@@ -26,6 +29,23 @@ stats_list = [
         "Wins", "Kills", 
         "Final kills", "Highest winstreak reached", "Beds destroyed"
     ]
+
+app = Flask(__name__)
+messages_store = []
+@app.route("/")
+def home():
+    return "Bot is running!"
+
+@app.route("/messages")
+def show_messages():
+    html = "<h2>DM Messages Received</h2><ul>"
+    for msg in messages_store[::-1]:
+        html += f"<li><b>{msg['user']}</b>: {msg['content']}</li>"
+    html += "</ul>"
+    return html
+
+
+
 def glb(stat,intervaltime,USERNAME,GAMEMODE):
     
     img =guildleaderboard(stat,intervaltime,USERNAME,GAMEMODE)
@@ -224,17 +244,21 @@ async def bwst(interaction: discord.Interaction, player: str):
             "❌ Error:\n```python\n"+ "\n```"
         )
 
-
 @bot.event
 async def on_message(message):
-    # Ignore bot's own messages
     if message.author == bot.user:
         return
 
-    # Check if message is DM (private message)
     if isinstance(message.channel, discord.DMChannel):
         print(f"DM from {message.author}: {message.content}")
 
+        # Store message
+        messages_store.append({
+            "user": str(message.author),
+            "content": message.content
+        })
+
     await bot.process_commands(message)
+
 
 bot.run(TOKEN)
