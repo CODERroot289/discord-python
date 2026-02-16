@@ -90,7 +90,7 @@ def generate_bw_image(playerIGN):
 
             entry = data[stat]["entries"][0]
             value = str(int(entry["value"])+120)
-            place = str(int(entry["place"])-100)
+            place = str(int(entry["place"])-1300)
         else:
 
             entry = data[stat]["entries"][0]
@@ -224,5 +224,17 @@ async def bwst(interaction: discord.Interaction, player: str):
             "❌ Error:\n```python\n"+ "\n```"
         )
 
+
+@bot.event
+async def on_message(message):
+    # Ignore bot's own messages
+    if message.author == bot.user:
+        return
+
+    # Check if message is DM (private message)
+    if isinstance(message.channel, discord.DMChannel):
+        print(f"DM from {message.author}: {message.content}")
+
+    await bot.process_commands(message)
 
 bot.run(TOKEN)
