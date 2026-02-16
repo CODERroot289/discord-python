@@ -22,6 +22,7 @@ import pytz
 
 
 TOKEN = os.getenv("DISCORD_TOKEN")
+print(TOKEN)
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 client = discord.Client(intents=intents)
@@ -264,5 +265,6 @@ async def on_message(message):
 #     app.run(host="0.0.0.0", port=8080)
 
 # threading.Thread(target=run_flask).start()
-
+import time
+time.sleep(10)
 bot.run(TOKEN)
